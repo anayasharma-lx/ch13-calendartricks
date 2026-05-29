@@ -1,592 +1,434 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Calendar Magic & Digit Tricks</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Calendar Tricks — Ch. 13</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f5f4f0; --surface:#fff; --surface2:#f0ede8; --border:#d8d4cc;
-  --text:#1a1814; --text2:#5a5650; --text3:#9a958e;
-  --blue:#2c5f9e; --red:#c0392b; --green:#1a7a4a; --orange:#e08020;
-  --font:'DM Sans',-apple-system,sans-serif;
-  --mono:'DM Mono',ui-monospace,monospace;
+  --bg:#0f0d0b;--surface:#181512;--surface2:#201d18;
+  --chalk:#f0ece3;--chalk2:#b8b2a7;--chalk3:#716b62;--rule:#2a2520;
+  --blue:#6ba3d6;--green:#5dbf8a;--amber:#e8a840;--orange:#e0943a;--red:#e07070;
+  --display:'Playfair Display',Georgia,serif;
+  --mono:'DM Mono',monospace;--body:'DM Sans',sans-serif;
 }
-html{scroll-behavior:smooth}
-body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;line-height:1.5}
-.wrap{max-width:880px;margin:0 auto;padding:32px 20px 56px}
-.lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text2);margin-bottom:8px}
-.title{font-size:22px;font-weight:700;color:var(--text);margin-bottom:4px;letter-spacing:-0.01em}
-.subtitle{font-size:14px;color:var(--text2);margin-bottom:24px}
-.card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:22px}
-.card+.card{margin-top:14px}
-.card-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:14px}
+html,body{background:var(--bg);color:var(--chalk)}
+body{font-family:var(--body);min-height:100vh;-webkit-font-smoothing:antialiased;padding:0}
 
-/* Tabs */
-.tabs{display:flex;gap:4px;background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:4px;margin-bottom:20px}
-.tab{flex:1;padding:9px 12px;border:none;background:transparent;color:var(--text2);font-family:var(--font);font-size:13px;font-weight:500;cursor:pointer;border-radius:7px;transition:.15s}
-.tab.active{background:var(--surface);color:var(--text);font-weight:600;border:1.5px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,.03)}
+/* HEADER */
+.header{padding:20px 24px 16px;border-bottom:1px solid var(--rule)}
+.chap-tag{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--chalk3);margin-bottom:7px}
+.main-title{font-family:var(--display);font-size:clamp(28px,7vw,56px);font-weight:900;
+  line-height:.95;color:var(--chalk)}
+.main-title em{font-style:italic;color:var(--amber)}
+.subtitle{font-family:var(--mono);font-size:12px;color:var(--chalk3);margin-top:8px;
+  max-width:540px;line-height:1.65}
 
-/* Subtabs (pills) */
-.subtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px}
-.subtab{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;background:var(--surface);border:1.5px solid var(--border);color:var(--text2);font-family:var(--font)}
-.subtab:hover{border-color:var(--text3)}
-.subtab.active{background:var(--surface2);border-color:var(--text3);color:var(--text);font-weight:600}
+/* TABS */
+.tab-bar{display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;
+  border-bottom:1px solid var(--rule);scrollbar-width:none;background:var(--surface)}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab-btn{padding:12px 20px;border:none;border-bottom:2px solid transparent;
+  background:transparent;font-family:var(--display);font-size:16px;letter-spacing:.04em;
+  color:var(--chalk);opacity:.35;cursor:pointer;white-space:nowrap;flex-shrink:0;
+  margin-bottom:-1px;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.tab-btn.active{opacity:1;border-bottom-color:var(--amber)}
 
-/* Buttons */
-.btn{padding:8px 16px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s}
-.btn:hover{border-color:var(--text3)}
-.btn-primary{background:var(--blue);border-color:var(--blue);color:#fff}
-.btn-primary:hover{background:#234e85;border-color:#234e85}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.btn-sm{padding:6px 12px;font-size:12px}
+/* MAIN LAYOUT */
+.main-layout{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rule);
+  min-height:400px}
+@media(max-width:620px){.main-layout{grid-template-columns:1fr}}
 
-/* Grid layouts */
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media (max-width:720px){.grid2{grid-template-columns:1fr}}
-
-/* Toolbar */
-.toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;padding:12px 16px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px}
-.toolbar .tb-label{font-size:12px;font-weight:600;color:var(--text2)}
-.size-toggle{display:flex;gap:0;background:var(--surface2);border:1.5px solid var(--border);border-radius:7px;overflow:hidden}
-.size-toggle button{padding:6px 14px;border:none;background:transparent;font-family:var(--font);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer}
-.size-toggle button.active{background:var(--blue);color:#fff}
-.toolbar .hint{font-size:12px;color:var(--text3);margin-left:auto}
-
-/* Calendar */
-.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
-.cal-head{text-align:center;font-size:10px;font-weight:600;color:var(--text2);padding:6px 0;border-bottom:1.5px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
-.cal-cell{text-align:center;padding:9px 2px;border-radius:7px;font-size:13px;font-weight:500;background:transparent;border:1.5px solid transparent;color:var(--text);cursor:pointer;transition:.15s;font-family:var(--mono)}
-.cal-cell:hover:not(.empty){background:var(--surface2)}
+/* CALENDAR */
+.cal-side{padding:16px 20px;border-right:1px solid var(--rule)}
+.cal-head{font-family:var(--display);font-size:18px;letter-spacing:.04em;color:var(--chalk);margin-bottom:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-dow{text-align:center;font-family:var(--mono);font-size:9px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--chalk3);padding:4px 0;
+  border-bottom:1px solid var(--rule);margin-bottom:3px}
+.cal-cell{text-align:center;padding:8px 2px;font-family:var(--mono);font-size:13px;
+  font-weight:500;color:var(--chalk2);cursor:pointer;border:1.5px solid transparent;
+  transition:all .12s;-webkit-tap-highlight-color:transparent}
+.cal-cell:hover:not(.empty){background:var(--surface2);border-color:var(--rule)}
 .cal-cell.empty{color:transparent;cursor:default}
-.cal-cell.empty:hover{background:transparent}
-.cal-cell.sel{background:#fff8f0;border-color:var(--orange);color:var(--orange);font-weight:600}
+.cal-cell.selected{background:rgba(232,168,64,.15);border-color:var(--amber);
+  color:var(--amber);font-weight:700}
+.size-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.size-lbl{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--chalk3);flex-shrink:0}
+.size-btn{padding:5px 12px;border:1px solid var(--rule);background:transparent;
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--chalk3);
+  cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent}
+.size-btn.active{background:var(--amber);color:var(--bg);border-color:var(--amber)}
+.size-btn:hover:not(.active){color:var(--chalk);border-color:var(--chalk3)}
+.challenge-btn{padding:6px 14px;border:1px solid var(--chalk3);background:transparent;
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--chalk3);
+  cursor:pointer;transition:all .12s;-webkit-tap-highlight-color:transparent}
+.challenge-btn:hover{border-color:var(--chalk);color:var(--chalk)}
 
-/* Selected block display */
-.block-grid{display:grid;gap:6px;margin-bottom:12px}
-.block-cell{text-align:center;padding:14px 4px;border-radius:9px;background:#fff8f0;border:1.5px solid #f0d8c0;font-size:22px;font-weight:600;color:var(--orange);font-family:var(--mono)}
+/* RIGHT SIDE */
+.info-side{display:flex;flex-direction:column}
+.block-display{padding:16px 20px;border-bottom:1px solid var(--rule)}
+.block-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--chalk3);margin-bottom:10px}
+.block-grid{display:grid;gap:4px;margin-bottom:12px}
+.bc{padding:12px 4px;text-align:center;font-family:var(--display);font-size:22px;
+  letter-spacing:.02em;color:var(--amber);background:rgba(232,168,64,.1);border:1px solid rgba(232,168,64,.25)}
 
-/* IC rows for info */
-.ic-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;font-size:13px}
-.ic-row+.ic-row{border-top:1px solid var(--border)}
-.ic-row .label{color:var(--text2)}
-.ic-row .val{font-family:var(--mono);color:var(--text);font-weight:500}
-.ic-row .val.big{font-size:24px;font-weight:600;color:var(--green)}
-.ic-row .val.check{color:var(--green)}
-.ic-row .val.cross{color:var(--red)}
+/* REVEAL STEPS */
+.reveal-section{padding:16px 20px;border-bottom:1px solid var(--rule)}
+.rev-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--chalk3);margin-bottom:10px}
+.rev-step{margin-bottom:8px;padding:10px 12px;background:var(--surface2);border:1px solid var(--rule)}
+.rs-num{font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--chalk3);margin-bottom:4px}
+.rs-text{font-size:13px;color:var(--chalk2);line-height:1.6}
+.rs-alg{font-family:var(--mono);font-size:13px;color:var(--amber);margin-top:4px;font-weight:600}
+.show-alg-btn{padding:7px 14px;border:1px solid var(--amber);background:transparent;
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--amber);
+  cursor:pointer;margin-top:8px;-webkit-tap-highlight-color:transparent;transition:all .12s}
+.show-alg-btn:hover{background:var(--amber);color:var(--bg)}
+.alg-block{font-family:var(--mono);font-size:12px;color:var(--chalk2);
+  line-height:1.9;white-space:pre;overflow-x:auto;padding:12px 14px;
+  background:rgba(232,168,64,.06);border:1px solid rgba(232,168,64,.2);margin-top:8px}
+.alg-hl{color:var(--green);font-weight:600}
 
-/* Insight box */
-.insight{background:#fff8f0;border:1.5px solid #f0d8c0;color:#6b4400;border-radius:10px;padding:12px 14px;font-size:13px;line-height:1.65;margin-top:14px}
-.insight strong{color:#5a3800}
+/* DECODE */
+.decode-section{padding:16px 20px}
+.decode-head{font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--chalk3);margin-bottom:8px}
+.decode-body{font-size:12.5px;color:var(--chalk2);line-height:1.6;margin-bottom:10px}
+input.decode-inp{padding:8px 12px;border:1px solid var(--rule);background:var(--surface2);
+  font-family:var(--display);font-size:20px;color:var(--chalk);outline:none;
+  width:100%;text-align:center;-moz-appearance:textfield;transition:border .12s;
+  margin-bottom:8px}
+input.decode-inp::-webkit-inner-spin-button{-webkit-appearance:none}
+input.decode-inp:focus{border-color:var(--amber)}
+.decode-result{font-family:var(--mono);font-size:13px;color:var(--green);
+  padding:10px 12px;background:rgba(93,191,138,.1);border:1px solid rgba(93,191,138,.25);
+  display:none}
+.decode-err{color:var(--red);background:rgba(224,112,112,.1);border-color:rgba(224,112,112,.25)}
 
-/* Algebra code block */
-.alg-block{background:var(--surface2);border:1.5px solid var(--border);border-radius:9px;padding:12px 14px;font-family:var(--mono);font-size:12.5px;color:var(--text);line-height:1.9;white-space:pre;overflow-x:auto;margin-top:10px}
+/* 2-DIGIT TRICKS (second tab) */
+.dig-layout{padding:18px 24px}
+.slider-row{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.slider-row input[type=range]{flex:1;height:3px;background:var(--rule);outline:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;border-radius:2px}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+  width:22px;height:22px;border-radius:50%;background:var(--amber);
+  border:3px solid var(--bg);cursor:pointer}
+.num-box{min-width:70px;height:56px;padding:0 14px;background:var(--surface2);
+  border:1px solid var(--rule);display:flex;align-items:center;justify-content:center;
+  font-family:var(--display);font-size:28px;letter-spacing:.02em;color:var(--amber)}
+.ic-rows{display:flex;flex-direction:column;gap:0;border:1px solid var(--rule)}
+.ic-row{display:flex;justify-content:space-between;align-items:center;
+  padding:9px 12px;border-bottom:1px solid var(--rule);font-size:13px}
+.ic-row:last-child{border-bottom:none}
+.ic-lbl{color:var(--chalk2)}
+.ic-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--chalk)}
+.ic-val.check{color:var(--green)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:560px){.two-col{grid-template-columns:1fr}}
+.col-card{padding:14px 16px;background:var(--surface2);border:1px solid var(--rule)}
+.cc-head{font-family:var(--display);font-size:16px;letter-spacing:.04em;color:var(--amber);margin-bottom:8px}
+.cc-body{font-family:var(--mono);font-size:12px;color:var(--chalk2);line-height:1.8;white-space:pre;overflow-x:auto}
 
-/* Slider */
-.slider-row{display:flex;align-items:center;gap:14px}
-.slider-row input[type=range]{flex:1;cursor:pointer;height:4px;border-radius:2px;accent-color:var(--blue);outline:none}
-.num-box{min-width:64px;height:54px;padding:0 14px;border-radius:10px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:var(--text);font-family:var(--mono)}
-
-/* Inputs */
-input[type=number]{background:var(--surface);border:1.5px solid var(--border);border-radius:8px;color:var(--text);padding:9px 12px;font-size:15px;font-family:var(--mono);font-weight:500;outline:none;width:100%}
-input[type=number]:focus{border-color:var(--blue)}
-
-/* Feedback */
-.fb{padding:10px 12px;border-radius:8px;font-size:13px;margin-top:10px}
-.fb.ok{background:#f0f7f2;border:1.5px solid #c4dcc9;color:var(--green);font-weight:600}
-.fb.err{background:#fdf2f1;border:1.5px solid #e8c4c0;color:var(--red)}
-.fb.hint{background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);font-size:12px}
-
-.section-divider{margin:18px 0 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.2px;color:var(--text2)}
-
-::-webkit-scrollbar{width:5px}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+/* INSIGHT */
+.insight-row{padding:16px 24px;display:grid;grid-template-columns:3px 1fr;gap:14px;
+  border-top:1px solid var(--rule)}
+.ins-bar{background:var(--amber)}
+.ins-text{font-size:13px;line-height:1.75;color:var(--chalk2)}
+.ins-text strong{color:var(--chalk)}
 </style>
 </head>
 <body>
 
-<div class="wrap">
-  <div class="lbl">Chapter 6.4–6.6 — Algebra in Disguise</div>
-  <div class="title">Calendar Magic & Digit Tricks</div>
-  <div class="subtitle">Number tricks that feel like magic — until algebra explains why they work every single time.</div>
+<div class="header">
+  <div class="chap-tag">Ch. 13 · Number Patterns &amp; Tricks</div>
+  <div class="main-title">Calendar <em>Magic</em></div>
+  <div class="subtitle">Pick any block of dates on a calendar. The sum is predictable — and algebra explains why the "magic" works every single time.</div>
+</div>
 
-  <div class="tabs">
-    <button class="tab active" data-view="cal">Calendar Magic</button>
-    <button class="tab" data-view="dig">Digit Tricks</button>
+<div class="tab-bar">
+  <button class="tab-btn active" data-t="cal">Calendar blocks</button>
+  <button class="tab-btn" data-t="dig">Digit tricks</button>
+</div>
+
+<!-- ═══ CALENDAR TAB ═══ -->
+<div id="view-cal">
+  <div class="main-layout">
+    <div class="cal-side">
+      <div class="size-row">
+        <span class="size-lbl">Block size</span>
+        <button class="size-btn active" data-n="2">2×2</button>
+        <button class="size-btn" data-n="3">3×3</button>
+        <button class="challenge-btn" id="challenge-btn">New challenge</button>
+      </div>
+      <div class="cal-head">August 2025</div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+
+    <div class="info-side">
+      <div class="block-display">
+        <div class="block-head">Selected block</div>
+        <div class="block-grid" id="block-grid"></div>
+        <div id="block-info"></div>
+      </div>
+
+      <div class="reveal-section">
+        <div class="rev-head">Why the magic works</div>
+        <div id="magic-steps"></div>
+      </div>
+
+      <div class="decode-section">
+        <div class="decode-head">Mind reader mode</div>
+        <div class="decode-body">A friend picks a hidden block and tells you the sum. Enter it to instantly find their top-left number.</div>
+        <input type="number" class="decode-inp" id="decode-inp" placeholder="Enter the sum…">
+        <div class="decode-result" id="decode-result"></div>
+      </div>
+    </div>
   </div>
 
-  <!-- ============ CALENDAR ============ -->
-  <div id="view-cal">
-    <div class="toolbar">
-      <span class="tb-label">Grid size</span>
-      <div class="size-toggle" id="size-toggle">
-        <button data-n="2" class="active">2 × 2</button>
-        <button data-n="3">3 × 3</button>
-      </div>
-      <button class="btn btn-sm" id="challenge-btn">New challenge</button>
-      <span class="hint">Click any date to move the selection</span>
+  <div class="insight-row">
+    <div class="ins-bar"></div>
+    <p class="ins-text">The secret: every date in a block can be written as <strong>a + offset</strong>, where a is the top-left date. The offsets always add to the same constant — so <strong>sum = n·a + constant</strong>. Given the sum, you solve for a instantly.</p>
+  </div>
+</div>
+
+<!-- ═══ DIGIT TRICKS TAB ═══ -->
+<div id="view-dig" style="display:none">
+  <div class="dig-layout">
+    <div class="slider-row">
+      <input type="range" id="n2-sl" min="10" max="99" value="47">
+      <div class="num-box" id="n2-box">47</div>
     </div>
+    <div class="ic-rows" id="r2-rows"></div>
 
-    <div class="grid2">
-      <div>
-        <div class="card">
-          <div class="card-title" id="cal-month-title">August 2025</div>
-          <div class="cal" id="cal-grid"></div>
-        </div>
+    <div class="two-col">
+      <div class="col-card">
+        <div class="cc-head">Why it works — algebra</div>
+        <div class="cc-body">Let the number = 10a + b
+
+Reversed = 10b + a
+
+Difference = (10b+a) - (10a+b)
+           = 9b - 9a = 9(b-a)
+           → always ÷ 9 ✓
+
+Sum = (10a+b) + (10b+a)
+    = 11(a+b)
+    → always ÷ 11 ✓</div>
       </div>
+      <div class="col-card">
+        <div class="cc-head">The magic rule</div>
+        <div class="cc-body">Pick any 2-digit number where the digits differ.
 
-      <div>
-        <div class="card">
-          <div class="card-title">Selected block</div>
-          <div class="block-grid" id="block-display"></div>
-          <div id="block-info"></div>
-        </div>
+Add it to its reverse → always divisible by 11.
 
-        <div class="card">
-          <div class="card-title">Decode: find the block from just the sum</div>
-          <div id="decode-area"></div>
-        </div>
+Subtract the smaller from the larger → always divisible by 9.
+
+Both facts hold for EVERY such number — not luck, just algebra.</div>
       </div>
     </div>
-
-    <div class="insight" id="cal-insight"></div>
   </div>
 
-  <!-- ============ DIGIT TRICKS ============ -->
-  <div id="view-dig" style="display:none">
-    <div class="subtabs">
-      <button class="subtab active" data-dig="r2">2-digit reversal</button>
-      <button class="subtab" data-dig="r3">3-digit cycling</button>
-    </div>
-
-    <!-- 2-digit -->
-    <div id="dig-r2">
-      <div class="grid2">
-        <div>
-          <div class="card">
-            <div class="card-title">Pick any 2-digit number</div>
-            <div class="slider-row">
-              <input type="range" id="n2-input" min="10" max="99" value="47">
-              <div class="num-box" id="n2-display">47</div>
-            </div>
-            <div class="section-divider">Results</div>
-            <div class="ic-row"><span class="label">Original number</span><span class="val" id="n2-orig">47</span></div>
-            <div class="ic-row"><span class="label">Reversed (swap digits)</span><span class="val" id="n2-rev">74</span></div>
-            <div class="ic-row"><span class="label">Difference</span><span class="val" id="n2-diff">27</span></div>
-            <div class="ic-row"><span class="label">Difference ÷ 9</span><span class="val" id="n2-diff-9">3 ✓</span></div>
-            <div class="ic-row"><span class="label">Sum</span><span class="val" id="n2-sum">121</span></div>
-            <div class="ic-row"><span class="label">Sum ÷ 11</span><span class="val" id="n2-sum-11">11 ✓</span></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="card">
-            <div class="card-title">Why it works — algebra</div>
-            <div class="alg-block">Let the number = 10a + b  (a=tens, b=units)
-Reversed       = 10b + a
-
-Difference = (10b + a) − (10a + b)
-           = 9b − 9a
-           = 9(b − a)   → always ÷ 9 ✓
-
-Sum = (10a + b) + (10b + a)
-    = 11a + 11b
-    = 11(a + b)   → always ÷ 11 ✓</div>
-            <div class="insight">Both work for <em>any</em> 2-digit number with different digits. Try a few — it never fails!</div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Practice — test yourself</div>
-            <div class="btn-row" style="margin-bottom:12px">
-              <button class="btn btn-sm" id="r2-new">New puzzle</button>
-              <span style="font-size:13px;color:var(--text2)">Number: <span id="r2-puzzle" style="font-family:var(--mono);color:var(--orange);font-size:18px;font-weight:600;margin-left:4px">—</span></span>
-            </div>
-            <div id="r2-quiz" style="display:none">
-              <div style="font-size:12px;color:var(--text2);margin-bottom:6px">What is the <strong>difference</strong> between it and its reverse?</div>
-              <div class="btn-row" style="margin-bottom:10px">
-                <input type="number" id="r2-ans-diff" style="width:120px" placeholder="?">
-                <button class="btn btn-sm btn-primary" id="r2-check-diff">Check</button>
-              </div>
-              <div style="font-size:12px;color:var(--text2);margin-bottom:6px">What is the <strong>sum</strong> of it and its reverse?</div>
-              <div class="btn-row">
-                <input type="number" id="r2-ans-sum" style="width:120px" placeholder="?">
-                <button class="btn btn-sm btn-primary" id="r2-check-sum">Check</button>
-              </div>
-              <div id="r2-feedback"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 3-digit -->
-    <div id="dig-r3" style="display:none">
-      <div class="grid2">
-        <div>
-          <div class="card">
-            <div class="card-title">Pick a 3-digit number</div>
-            <div class="slider-row">
-              <input type="range" id="n3-input" min="100" max="999" value="385">
-              <div class="num-box" id="n3-display">385</div>
-            </div>
-            <div class="section-divider">Cycle the digits: abc → bca → cab</div>
-            <div class="ic-row"><span class="label">abc (original)</span><span class="val" id="n3-abc">385</span></div>
-            <div class="ic-row"><span class="label">bca (1st cycle)</span><span class="val" id="n3-bca">853</span></div>
-            <div class="ic-row"><span class="label">cab (2nd cycle)</span><span class="val" id="n3-cab">538</span></div>
-            <div class="ic-row"><span class="label">Sum of all three</span><span class="val big" id="n3-sum">1776</span></div>
-            <div class="ic-row"><span class="label">Sum ÷ 3</span><span class="val" id="n3-div3">—</span></div>
-            <div class="ic-row"><span class="label">Sum ÷ 37</span><span class="val" id="n3-div37">—</span></div>
-          </div>
-        </div>
-
-        <div>
-          <div class="card">
-            <div class="card-title">Why it works — algebra</div>
-            <div class="alg-block">abc + bca + cab
-= (100a + 10b + c)
-+ (100b + 10c + a)
-+ (100c + 10a + b)
-= 111a + 111b + 111c
-= 111 × (a + b + c)
-= 3 × 37 × (a + b + c)
-→ always divisible by 3 AND 37 ✓</div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Practice — test yourself</div>
-            <div class="btn-row" style="margin-bottom:12px">
-              <button class="btn btn-sm" id="r3-new">New puzzle</button>
-              <span style="font-size:13px;color:var(--text2)">Number: <span id="r3-puzzle" style="font-family:var(--mono);color:var(--orange);font-size:18px;font-weight:600;margin-left:4px">—</span></span>
-            </div>
-            <div id="r3-quiz" style="display:none">
-              <div style="font-size:12px;color:var(--text2);margin-bottom:6px">What is abc + bca + cab?</div>
-              <div class="btn-row">
-                <input type="number" id="r3-ans" style="width:140px" placeholder="?">
-                <button class="btn btn-sm btn-primary" id="r3-check">Check</button>
-              </div>
-              <div id="r3-feedback"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="insight-row">
+    <div class="ins-bar"></div>
+    <p class="ins-text">Digit tricks work because <strong>our number system is base 10</strong>. A two-digit number is 10a + b. When you reverse digits you get 10b + a. The difference is 9(b−a), the sum is 11(a+b). Both are algebraic identities — they hold without exception.</p>
   </div>
 </div>
 
 <script>
-const $ = (s,p=document)=>p.querySelector(s);
-const $$ = (s,p=document)=>[...p.querySelectorAll(s)];
-const rand = (lo,hi)=> Math.floor(Math.random()*(hi-lo+1))+lo;
+// ═══ CALENDAR ═══
+const CAL_OFFSET=5; // Aug 2025 starts on Friday (col 5, 0=Sun)
+const ROWS=6,COLS=7,DAYS=31;
 
-// =========== CALENDAR ===========
-// August 2025: 1st is a Friday → col 5
-const CAL_OFFSET = 5; // Friday
-const DAYS_IN_MONTH = 31;
-const ROWS = 6, COLS = 7;
+let calSize=2,anchor={r:1,c:2},showAlg=false,challenge=null;
 
-function calCell(r,c){
-  const day = r*COLS + c - CAL_OFFSET + 1;
-  return (day>=1 && day<=DAYS_IN_MONTH) ? day : null;
+function calDay(r,c){const d=r*COLS+c-CAL_OFFSET+1;return(d>=1&&d<=DAYS)?d:null;}
+function blockDays(ar,ac,sz){
+  const days=[];
+  for(let r=0;r<sz;r++)for(let c=0;c<sz;c++){const d=calDay(ar+r,ac+c);if(d)days.push(d);}
+  return days;
+}
+function blockValid(ar,ac,sz){
+  if(ar+sz>ROWS||ac+sz>COLS)return false;
+  for(let r=0;r<sz;r++)for(let c=0;c<sz;c++)if(!calDay(ar+r,ac+c))return false;
+  return true;
+}
+// constant offset sum for sz×sz block (offsets relative to top-left)
+function offsetSum(sz){
+  let s=0;
+  for(let r=0;r<sz;r++)for(let c=0;c<sz;c++)if(r||c)s+=r*7+c;
+  return s;
 }
 
-let calState = {
-  size:2,
-  anchor:{r:1, c:5}, // points to "1" initially? Let's start somewhere sensible
-  showAlgebra:false,
-  challenge:null
-};
-// Start with selected block including 5,6,12,13 (row 1, col 2 if 2x2)
-calState.anchor = {r:1, c:2};
-
 function renderCal(){
-  // Header dow labels
-  const grid = $('#cal-grid');
-  grid.innerHTML = '';
-  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
-    const h = document.createElement('div');
-    h.className = 'cal-head';
-    h.textContent = d;
-    grid.append(h);
-  });
+  const grid=document.getElementById('cal-grid');grid.innerHTML='';
+  const days=blockDays(anchor.r,anchor.c,calSize);
+  const selSet=new Set(days);
 
-  // Selected set
-  const sel = new Set();
-  for(let r=0;r<calState.size;r++){
-    for(let c=0;c<calState.size;c++){
-      const day = calCell(calState.anchor.r+r, calState.anchor.c+c);
-      if(day) sel.add(day);
-    }
-  }
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+    const h=document.createElement('div');h.className='cal-dow';h.textContent=d;grid.appendChild(h);
+  });
 
   for(let r=0;r<ROWS;r++){
     for(let c=0;c<COLS;c++){
-      const day = calCell(r,c);
-      const cell = document.createElement('div');
-      cell.className = 'cal-cell' + (day===null?' empty':'') + (sel.has(day)?' sel':'');
-      cell.textContent = day || '';
+      const day=calDay(r,c);
+      const cell=document.createElement('div');
+      cell.className='cal-cell'+(day===null?' empty':'')+(selSet.has(day)?' selected':'');
+      cell.textContent=day||'';
       if(day){
-        cell.addEventListener('click', ()=>{
-          // Check the block fits
-          if(r + calState.size > ROWS) return;
-          if(c + calState.size > COLS) return;
-          // Check all cells of block are valid days
-          let ok = true;
-          for(let rr=0;rr<calState.size;rr++){
-            for(let cc=0;cc<calState.size;cc++){
-              if(!calCell(r+rr, c+cc)){ ok=false; break; }
-            }
-          }
-          if(!ok) return;
-          calState.anchor = {r, c};
-          calState.showAlgebra = false;
+        cell.addEventListener('pointerdown',e=>{e.preventDefault();
+          if(!blockValid(r,c,calSize))return;
+          anchor={r,c};showAlg=false;challenge=null;
+          document.getElementById('decode-inp').value='';
+          document.getElementById('decode-result').style.display='none';
           renderCal();
         });
       }
-      grid.append(cell);
+      grid.appendChild(cell);
     }
   }
 
   // Block display
-  const block = [];
-  for(let r=0;r<calState.size;r++){
-    for(let c=0;c<calState.size;c++){
-      const day = calCell(calState.anchor.r+r, calState.anchor.c+c);
-      if(day) block.push(day);
-    }
-  }
-  const expected = calState.size * calState.size;
-  const bd = $('#block-display');
-  bd.style.gridTemplateColumns = `repeat(${calState.size},1fr)`;
-  bd.innerHTML = '';
-  if(block.length === expected){
-    block.forEach(n=>{
-      const c = document.createElement('div');
-      c.className = 'block-cell';
-      c.textContent = n;
-      bd.append(c);
-    });
-  }
+  const days2=blockDays(anchor.r,anchor.c,calSize);
+  const blockEl=document.getElementById('block-grid');
+  blockEl.style.gridTemplateColumns=`repeat(${calSize},1fr)`;
+  blockEl.innerHTML='';
+  days2.forEach(d=>{
+    const c=document.createElement('div');c.className='bc';c.textContent=d;blockEl.appendChild(c);
+  });
+  const sum=days2.reduce((s,d)=>s+d,0);
+  const tl=days2[0];
+  const cells=calSize*calSize;
+  const con=offsetSum(calSize);
 
-  const sum = block.reduce((a,b)=>a+b,0);
-  const topLeft = block.length === expected ? Math.min(...block) : null;
-  const constant = calState.size === 2 ? 16 : 72;
-  const cells = expected;
+  const bi=document.getElementById('block-info');
+  bi.innerHTML=`<div style="font-family:var(--mono);font-size:12px;color:var(--chalk3);margin-top:8px;line-height:1.8">
+    Top-left (a) = <span style="color:var(--amber);font-weight:700">${tl}</span> &nbsp;·&nbsp;
+    Sum = <span style="color:var(--green);font-weight:700">${sum}</span>
+  </div>`;
 
-  const info = $('#block-info');
-  info.innerHTML = '';
-  if(block.length === expected){
-    info.innerHTML = `
-      <div class="ic-row"><span class="label">Top-left number</span><span class="val">${topLeft}</span></div>
-      <div class="ic-row"><span class="label">Number of cells</span><span class="val">${cells}</span></div>
-      <div class="ic-row"><span class="label">Sum of all ${cells} numbers</span><span class="val big">${sum}</span></div>
-    `;
-  } else {
-    info.innerHTML = `<div class="fb hint">Click a date that fits a full ${calState.size}×${calState.size} block.</div>`;
-  }
-
-  // Decode area
-  const dc = $('#decode-area');
-  dc.innerHTML = '';
-  if(calState.challenge){
-    const ch = calState.challenge;
-    const tl = (ch.sum - constant) / cells;
-    dc.innerHTML = `
-      <div style="font-size:13px;color:var(--text2);margin-bottom:10px">A friend picks a hidden ${calState.size}×${calState.size} block. Their sum is <strong style="color:var(--orange);font-family:var(--mono);font-size:16px">${ch.sum}</strong>. Find the top-left number.</div>
-      <div class="btn-row" style="margin-bottom:10px">
-        <input type="number" id="decode-input" style="width:140px" placeholder="Top-left = ?">
-        <button class="btn btn-sm btn-primary" id="decode-check">Check</button>
+  // Magic steps
+  const ms=document.getElementById('magic-steps');
+  if(!showAlg){
+    ms.innerHTML=`
+      <div class="rev-step">
+        <div class="rs-num">Observation</div>
+        <div class="rs-text">Changing the anchor gives a different sum. But look: <strong>sum ÷ ${cells}</strong> always gives you something very close to the top-left date.</div>
+        <div class="rs-alg">sum = ${sum}, sum ÷ ${cells} = ${(sum/cells).toFixed(2)}, a = ${tl}</div>
       </div>
-      <div id="decode-fb"></div>
-      <div class="alg-block" style="margin-top:10px">${cells}a + ${constant} = ${ch.sum}
-${cells}a = ${ch.sum - constant}
-a = ${tl}</div>
-    `;
-    $('#decode-check').addEventListener('click', ()=>{
-      const v = parseInt($('#decode-input').value);
-      const fb = $('#decode-fb');
-      if(v === tl){
-        fb.innerHTML = `<div class="fb ok">Correct — top-left = ${tl}</div>`;
-      } else {
-        fb.innerHTML = `<div class="fb err">Not quite. Try: (${ch.sum} − ${constant}) ÷ ${cells} = ${tl}</div>`;
+      <button class="show-alg-btn" id="show-alg-btn">Show me the algebra →</button>`;
+    document.getElementById('show-alg-btn').addEventListener('click',()=>{showAlg=true;renderCal();});
+  } else {
+    const offsets=[];
+    for(let r=0;r<calSize;r++)for(let c=0;c<calSize;c++)if(r||c)offsets.push(r*7+c);
+    ms.innerHTML=`
+      <div class="rev-step">
+        <div class="rs-num">Step 1 — Name all dates</div>
+        <div class="rs-text">Call the top-left date <strong>a</strong>. Every other date is a + offset:</div>
+        <div class="rs-alg">a, a+1, ${calSize>2?'a+2, ':''} a+7, a+8, ${calSize>2?'a+9, a+14, a+15, a+16':''}…</div>
+      </div>
+      <div class="rev-step">
+        <div class="rs-num">Step 2 — Add all ${cells} dates</div>
+        <div class="rs-text">Collect all the a's and all the fixed offsets separately:</div>
+        <div class="rs-alg">sum = ${cells}a + (0+${offsets.join('+')})\n     = ${cells}a + ${con}</div>
+      </div>
+      <div class="rev-step">
+        <div class="rs-num">Step 3 — Solve for a</div>
+        <div class="rs-text">Given the sum, you find a instantly:</div>
+        <div class="rs-alg">a = (sum − ${con}) ÷ ${cells} = (${sum}−${con})÷${cells} = <span class="alg-hl">${tl} ✓</span></div>
+      </div>`;
+  }
+
+  // Decode
+  const di=document.getElementById('decode-inp');
+  if(challenge&&!di.value){
+    di.value=challenge.sum;
+    document.getElementById('decode-result').style.display='none';
+  }
+}
+
+document.getElementById('decode-inp').addEventListener('input',e=>{
+  const v=+e.target.value;const sz=calSize;const cells=sz*sz;const con=offsetSum(sz);
+  const res=document.getElementById('decode-result');
+  if(!v||isNaN(v)){res.style.display='none';return;}
+  const a=(v-con)/cells;
+  res.style.display='block';
+  if(a===Math.floor(a)&&a>=1&&a<=DAYS){
+    res.className='decode-result';
+    res.innerHTML=`a = (${v} − ${con}) ÷ ${cells} = <strong>${a}</strong>  →  top-left date = ${a}`;
+    // Highlight on calendar if possible
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        if(calDay(r,c)===a&&blockValid(r,c,sz)){anchor={r,c};showAlg=false;renderCal();return;}
       }
-    });
-  } else {
-    if(!calState.showAlgebra){
-      dc.innerHTML = `
-        <div style="font-size:13px;color:var(--text2);margin-bottom:10px">Knowing the sum = <strong style="color:var(--orange)">${sum||'?'}</strong>, find the top-left number using algebra.</div>
-        <button class="btn btn-primary btn-sm" id="show-alg">Show algebra</button>
-      `;
-      $('#show-alg').addEventListener('click', ()=>{ calState.showAlgebra = true; renderCal(); });
-    } else if(topLeft !== null) {
-      dc.innerHTML = `<div class="alg-block">${cells}a + ${constant} = ${sum}
-${cells}a = ${sum - constant}
-a = ${topLeft}
-
-Top-left = ${topLeft} ✓</div>`;
     }
+  } else {
+    res.className='decode-result decode-err';
+    res.textContent='Not a valid sum for a '+sz+'×'+sz+' block in this calendar.';
   }
-
-  $('#cal-insight').innerHTML =
-    `For any ${calState.size}×${calState.size} block with top-left = <strong>a</strong>: the sum is always <strong>${cells}a + ${constant}</strong>. This is because the other ${cells-1} numbers are at fixed offsets from a (a+1, a+7, a+8, …) that always add up to ${constant}.`;
-}
-
-$$('#size-toggle button').forEach(b=>{
-  b.addEventListener('click', ()=>{
-    $$('#size-toggle button').forEach(x=>x.classList.remove('active'));
-    b.classList.add('active');
-    calState.size = +b.dataset.n;
-    // Reset to a valid anchor
-    calState.anchor = {r:1, c:2};
-    calState.showAlgebra = false;
-    calState.challenge = null;
-    renderCal();
-  });
 });
 
-$('#challenge-btn').addEventListener('click', ()=>{
-  // Pick a random valid block
-  let r, c, tries=0;
-  do {
-    r = rand(0, ROWS - calState.size);
-    c = rand(0, COLS - calState.size);
-    tries++;
-    if(tries > 50) break;
-  } while(!calCell(r,c) || !calCell(r+calState.size-1, c+calState.size-1));
-  const block = [];
-  for(let rr=0;rr<calState.size;rr++){
-    for(let cc=0;cc<calState.size;cc++){
-      const d = calCell(r+rr, c+cc);
-      if(d) block.push(d);
-    }
-  }
-  if(block.length !== calState.size*calState.size) return;
-  calState.challenge = { sum: block.reduce((a,b)=>a+b,0), anchor:{r,c} };
-  calState.anchor = {r, c};
-  calState.showAlgebra = false;
+document.querySelectorAll('.size-btn').forEach(b=>b.addEventListener('click',()=>{
+  calSize=+b.dataset.n;anchor={r:1,c:2};showAlg=false;challenge=null;
+  document.querySelectorAll('.size-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');renderCal();
+}));
+
+document.getElementById('challenge-btn').addEventListener('click',()=>{
+  let r,c,tries=0;
+  do{r=Math.floor(Math.random()*ROWS);c=Math.floor(Math.random()*COLS);tries++;}
+  while(!blockValid(r,c,calSize)&&tries<100);
+  if(!blockValid(r,c,calSize))return;
+  const days=blockDays(r,c,calSize);
+  challenge={sum:days.reduce((s,d)=>s+d,0),r,c};
+  anchor={r,c};showAlg=false;
+  document.getElementById('decode-inp').value=challenge.sum;
   renderCal();
+  document.getElementById('decode-result').style.display='none';
 });
 
-// =========== DIGIT TRICKS — 2 digit ===========
+// ═══ DIGIT TRICKS ═══
 function renderR2(){
-  const n = +$('#n2-input').value;
-  $('#n2-display').textContent = n;
-  $('#n2-orig').textContent = n;
-  const a = Math.floor(n/10), b = n%10;
-  const rev = b*10 + a;
-  const diff = Math.abs(n - rev);
-  const sum = n + rev;
-  $('#n2-rev').textContent = rev;
-  $('#n2-diff').textContent = diff;
-  $('#n2-sum').textContent = sum;
-  if(a !== b){
-    $('#n2-diff-9').innerHTML = `${diff/9} <span class="val check">✓</span>`;
-    $('#n2-diff-9').className = 'val';
-  } else {
-    $('#n2-diff-9').textContent = '0 (digits equal)';
-  }
-  $('#n2-sum-11').innerHTML = `${sum/11} <span style="color:var(--green)">✓</span>`;
-}
-$('#n2-input').addEventListener('input', renderR2);
-renderR2();
-
-// R2 quiz
-let r2Puzzle = null;
-$('#r2-new').addEventListener('click', ()=>{
-  let n;
-  do { n = rand(10,99); } while(Math.floor(n/10) === n%10);
-  r2Puzzle = n;
-  $('#r2-puzzle').textContent = n;
-  $('#r2-quiz').style.display = 'block';
-  $('#r2-ans-diff').value = '';
-  $('#r2-ans-sum').value = '';
-  $('#r2-feedback').innerHTML = '';
-});
-
-function r2Check(kind){
-  if(!r2Puzzle) return;
-  const a = Math.floor(r2Puzzle/10), b = r2Puzzle%10;
-  const rev = b*10+a;
-  const expected = kind==='diff' ? Math.abs(r2Puzzle - rev) : (r2Puzzle + rev);
-  const input = kind==='diff' ? $('#r2-ans-diff') : $('#r2-ans-sum');
-  const v = parseInt(input.value);
-  const fb = $('#r2-feedback');
-  if(v === expected){
-    const divisor = kind==='diff' ? 9 : 11;
-    fb.innerHTML = `<div class="fb ok">Correct — and notice ${expected} ÷ ${divisor} = ${expected/divisor}</div>`;
-  } else {
-    fb.innerHTML = `<div class="fb err">Not quite. Reverse ${r2Puzzle} to get ${rev}, then ${kind === 'diff' ? 'subtract' : 'add'}.</div>`;
-  }
-}
-$('#r2-check-diff').addEventListener('click', ()=>r2Check('diff'));
-$('#r2-check-sum').addEventListener('click', ()=>r2Check('sum'));
-
-// =========== DIGIT TRICKS — 3 digit ===========
-function renderR3(){
-  const n = +$('#n3-input').value;
-  $('#n3-display').textContent = n;
-  const a = Math.floor(n/100), b = Math.floor((n%100)/10), c = n%10;
-  const bca = b*100 + c*10 + a;
-  const cab = c*100 + a*10 + b;
-  const sum = n + bca + cab;
-  $('#n3-abc').textContent = n;
-  $('#n3-bca').textContent = bca;
-  $('#n3-cab').textContent = cab;
-  $('#n3-sum').textContent = sum;
-  $('#n3-div3').innerHTML = (sum%3===0) ? `${sum/3} <span style="color:var(--green)">✓</span>` : `<span style="color:var(--red)">not divisible</span>`;
-  $('#n3-div37').innerHTML = (sum%37===0) ? `${sum/37} <span style="color:var(--green)">✓</span>` : `<span style="color:var(--red)">not divisible</span>`;
-}
-$('#n3-input').addEventListener('input', renderR3);
-renderR3();
-
-let r3Puzzle = null;
-$('#r3-new').addEventListener('click', ()=>{
-  r3Puzzle = rand(100,999);
-  $('#r3-puzzle').textContent = r3Puzzle;
-  $('#r3-quiz').style.display = 'block';
-  $('#r3-ans').value = '';
-  $('#r3-feedback').innerHTML = '';
-});
-
-$('#r3-check').addEventListener('click', ()=>{
-  if(!r3Puzzle) return;
-  const n = r3Puzzle;
-  const a = Math.floor(n/100), b = Math.floor((n%100)/10), c = n%10;
-  const expected = n + (b*100+c*10+a) + (c*100+a*10+b);
-  const v = parseInt($('#r3-ans').value);
-  const fb = $('#r3-feedback');
-  if(v === expected){
-    fb.innerHTML = `<div class="fb ok">Correct — ${expected} ÷ 37 = ${expected/37} and ÷ 3 = ${expected/3}</div>`;
-  } else {
-    fb.innerHTML = `<div class="fb err">Not quite — the answer is ${expected}. It always equals 111 × (a+b+c) = ${111}×${a+b+c}.</div>`;
-  }
-});
-
-// =========== TABS ===========
-$$('.tab').forEach(t=>{
-  t.addEventListener('click', ()=>{
-    $$('.tab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    const v = t.dataset.view;
-    $('#view-cal').style.display = v==='cal' ? 'block' : 'none';
-    $('#view-dig').style.display = v==='dig' ? 'block' : 'none';
+  const n=+document.getElementById('n2-sl').value;
+  document.getElementById('n2-box').textContent=n;
+  const a=Math.floor(n/10),b=n%10;
+  const rev=b*10+a,diff=Math.abs(n-rev),sum=n+rev;
+  const rows=[
+    {l:'Original',v:n},
+    {l:'Reversed digits',v:rev},
+    {l:'Difference',v:diff},
+    {l:'Difference ÷ 9',v:a!==b?`${diff/9} ✓`:'0 (digits equal)',ok:a!==b},
+    {l:'Sum',v:sum},
+    {l:'Sum ÷ 11',v:`${sum/11} ✓`,ok:true},
+  ];
+  const el=document.getElementById('r2-rows');el.innerHTML='';
+  rows.forEach(({l,v,ok})=>{
+    const row=document.createElement('div');row.className='ic-row';
+    row.innerHTML=`<span class="ic-lbl">${l}</span><span class="ic-val${ok?' check':''}">${v}</span>`;
+    el.appendChild(row);
   });
-});
+}
 
-$$('.subtab').forEach(t=>{
-  t.addEventListener('click', ()=>{
-    $$('.subtab').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    const v = t.dataset.dig;
-    $('#dig-r2').style.display = v==='r2' ? 'block' : 'none';
-    $('#dig-r3').style.display = v==='r3' ? 'block' : 'none';
-  });
-});
+document.getElementById('n2-sl').addEventListener('input',renderR2);
+
+// ═══ TABS ═══
+document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById('view-cal').style.display=b.dataset.t==='cal'?'block':'none';
+  document.getElementById('view-dig').style.display=b.dataset.t==='dig'?'block':'none';
+}));
 
 renderCal();
+renderR2();
 </script>
 </body>
 </html>
